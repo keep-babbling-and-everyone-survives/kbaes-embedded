@@ -1,20 +1,21 @@
-import tornado.gen
+from tornado.gen import coroutine
 
 from model.ApiMessage import ApiMessage as ApiMessage
+from routines.Player import Player
 
 class ApiMessageHandler:
     def __init__(self, client, channel):
         self.client = client
         self.channel = channel
-    
-    @tornado.gen.coroutine
+
+    @coroutine
     def startListening(self):
         client = self.client
         yield client.connect()
         started = yield client.pubsub_subscribe(self.channel)
         if started:
             print "Subscribed to \"%s\"\nListening..." % (self.channel)
-        
+
         # Looping over received messages
         while True:
             # Let's "block" until a message is available
@@ -22,8 +23,21 @@ class ApiMessageHandler:
             self.handleMessage(msg)
 
     def handleMessage(self, msg):
-        msg = ApiMessage(msg)
-        print "Message Type : %s" % (msg.type)
-        print "Message Channel : %s" % (msg.channel)
-        print "Game id : %d" % (msg.getGameId())
-        print "Event : %s" % (msg.getEvent())
+        message = ApiMessage(msg)
+        print "Message Type : %s" % (message.type)
+        print "Message Channel : %s" % (message.channel)
+        print "Event : %s" % (message.getEvent())
+        return self.triggerEvent(message)
+
+    def triggerEvent(self, message):
+        dispatcher = {
+            "RequestNewGame": Player.newGame
+        }
+        event = message.getEvent()
+        dispatch = dispatcher.get(event, lambda: self.unknownEvent)
+        dispatch(message)
+        
+        return ""
+    
+    def unknownEvent(self):
+        print "This event is not handled."
