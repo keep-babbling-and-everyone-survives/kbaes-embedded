@@ -40,12 +40,11 @@ def b_trigger():
 
  return n
 
-b_a=b_b=b_c = false
-good=b_now = 0
 for donnees in serie_l:
  switch_leds(donnees)
  #wut = b_trigger()
- good=sequence = 0
+ b_a=b_b=b_c=b_now = 0
+ good=bad=sequence = 0
  while good == 0:
   sequence = 0
   time.sleep(0.1)
@@ -55,19 +54,28 @@ for donnees in serie_l:
    #print "yolo"
    wut = b_trigger()
    if GPIO.input(buttons[0]):
-    b_a = true
+    b_a = 1
     print (GPIO.input(buttons[0]))
    if GPIO.input(buttons[1]):
-    b_b = true
+    b_b = 1
     print(GPIO.input(buttons[1]))
    if GPIO.input(buttons[2]):
-    b_c = true
+    b_c = 1
     print(GPIO.input(buttons[2]))
    print("{} {} ".format(sequence,serie_b[b_now]))
    time.sleep(0.1)
-  
-  if(sequence == )
- abc = abc + 1
+  if b_a != 0:
+   sequence += 1
+  if b_b != 0:
+   sequence += 2
+  if b_c != 0:
+   sequence += 4
+  print("suite {}".format(sequence))
+  if sequence == serie_b[b_now]:
+   good = 1
+  else:
+   bad = 1
+ b_now += 1
   #si un bouton enfonce
    #si bouton correspondant enfonce
     #renvoie juste
