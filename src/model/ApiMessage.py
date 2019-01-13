@@ -37,3 +37,11 @@ class ApiMessage():
             return ""
         else:
             return out
+
+    def getGameStatus(self):
+        try:
+            out = self.message["data"]["game"]["status"]
+        except:
+            return ""
+        else:
+            return out
