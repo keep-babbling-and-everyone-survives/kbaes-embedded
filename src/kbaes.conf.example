@@ -1,4 +1,5 @@
-redis_address = 'localhost'
+api_protocol = 'http'
+api_address = 'localhost'
 redis_port = 6379
 channel_name = 'default-channel'
 board_id = 1
