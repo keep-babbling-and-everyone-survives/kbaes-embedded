@@ -1,4 +1,5 @@
 from tornado.gen import coroutine
+import tornado.ioloop
 
 from model.ApiMessage import ApiMessage as ApiMessage
 from routines.Player import Player
@@ -11,16 +12,20 @@ class ApiMessageHandler:
     @coroutine
     def startListening(self):
         client = self.client
-        yield client.connect()
-        started = yield client.pubsub_subscribe(self.channel)
-        if started:
-            print "Subscribed to \"%s\"\nListening..." % (self.channel)
+        connection = yield client.connect()
+        if connection:
+            started = yield client.pubsub_subscribe(self.channel)
+            if started:
+                print "Subscribed to \"%s\"\nListening..." % (self.channel)
 
-        # Looping over received messages
-        while True:
-            # Let's "block" until a message is available
-            msg = yield client.pubsub_pop_message()
-            self.handleMessage(msg)
+            # Looping over received messages
+            while True:
+                # Let's "block" until a message is available
+                msg = yield client.pubsub_pop_message()
+                self.handleMessage(msg)
+        else:
+            print "Connection error."
+            tornado.ioloop.IOLoop.instance().stop()
 
     def handleMessage(self, msg):
         message = ApiMessage(msg)
