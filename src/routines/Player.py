@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from tornado.gen import coroutine
 from tornado.options import options
 import tornado.ioloop
@@ -10,7 +12,7 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-from modules.MockModule import playModule as playModule
+from modules.ButtonModule import playModule as playModule
 
 class Player:
     __metaclass__ = Singleton
