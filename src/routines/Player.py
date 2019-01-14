@@ -10,7 +10,7 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-import modules.SimpleModule
+from modules.MockModule import playModule as playModule
 
 class Player:
     __metaclass__ = Singleton
@@ -51,19 +51,40 @@ class Player:
             tornado.ioloop.IOLoop.instance().add_future(confirmation, onGameConfirmReponse)
 
     @classmethod
-    def initBoard(cls, ruleset, gameid):
+    def initBoard(cls, ruleset):
         print "Webservices accepted confirmation, starting the game..."
         cls.game.status = "running"
+        cls.execRuleSet(ruleset)
+
+    @classmethod
+    def execRuleSet(cls, ruleset):
         cls.game.currentRuleSet = Ruleset(ruleset)
         print "Waiting for player input..."
-        modulePlayer = modules.SimpleModule.playModule(cls.game.currentRuleSet)
+        modulePlayer = playModule(cls.game.currentRuleSet)
         tornado.ioloop.IOLoop.instance().add_future(modulePlayer, onModuleSolved)
+
+    @classmethod
+    def sendAnswer(cls, answer):
+        print "Answer received from board, parsing and sending to API..."
+        req_url = "%s://%s/api/game/%d/answer/%d" % (options.api_protocol, options.api_address, cls.game.id, cls.game.currentRuleSet.id)
+        req_headers_dict = {'Accept': "application/json",'Content-Type': "application/json"}
+        req_body_dict = {'modules': answer}
+        answerSending = http_post_async(req_url, req_headers_dict, req_body_dict)
+        tornado.ioloop.IOLoop.instance().add_future(answerSending, onAnswerSent)
 
 def onGameConfirmReponse(response):
     result = response.result()
     result = json.loads(result)
-    Player.initBoard(result["next_ruleset"], result["game_id"])
+    Player.initBoard(result["next_ruleset"])
 
 def onModuleSolved(response):
-    print response.result()
+    Player.sendAnswer(response.result())
+
+def onAnswerSent(response):
+    result = response.result()
+    result = json.loads(result)
+    if result["has_next"]:
+        Player.execRuleSet(result["next_ruleset"])
+    else:
+        print "Game finished."
 

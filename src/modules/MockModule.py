@@ -1,4 +1,5 @@
 import tornado.gen
+import json
 
 @tornado.gen.coroutine
 def playModule(ruleset):
@@ -10,5 +11,14 @@ def playModule(ruleset):
             answer = answer | 1
         else :
             answer = answer << 1
-    answer = yield tornado.gen.maybe_future(answer)
+    answer = yield tornado.gen.maybe_future(convertToJson(answer, ruleset))
     raise tornado.gen.Return(answer)
+
+def convertToJson(answer, ruleset):
+    modules = []
+    moduleslen = len(ruleset.modules)
+    for n in range(moduleslen):
+        bit = 2**(moduleslen-(n+1))
+        modules.append({"name": ruleset.modules[n].name, "solution": answer & bit > 0})
+    return modules
+

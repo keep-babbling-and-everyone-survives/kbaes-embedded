@@ -1,4 +1,5 @@
 from utils.singleton import Singleton
+from model.Ruleset import Ruleset
 
 class Game:
     __metaclass__ = Singleton
@@ -6,7 +7,7 @@ class Game:
     def __init__(self):
         self.id = 0
         self.status = ""
-        self.currentRuleset = {}
+        self.currentRuleset = Ruleset
         self.options = {}
 
     def setId(self, id):
