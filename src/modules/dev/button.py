@@ -35,13 +35,11 @@ def b_trigger(): #controle si au moins 1 bouton est enfonce
   n = n + 1
  if GPIO.input(buttons[2]):
   n = n + 1
- print("boutons {}".format(n))
+ #print("boutons {}".format(n))
  return n
 
-b_now = 0
-for donnees in serie_l: #pour la serie
- switch_leds(donnees) #change les leds
- #wut = b_trigger()
+def l_and_b(leds):
+ switch_leds(leds) #change les leds
  b_a=b_b=b_c= 0 #met les var a 0
  b_send=sequence = 0
  while b_send == 0: #tant que la combinaison actuelle n'est pas envoyee
@@ -62,7 +60,7 @@ for donnees in serie_l: #pour la serie
    if GPIO.input(buttons[2]):
     b_c = 1
     #print(GPIO.input(buttons[2]))
-   print("{} {} ".format(sequence,serie_b[b_now]))
+   #print("{} {} ".format(sequence,serie_b[b_now]))
    time.sleep(0.1) #le temps qui passe
   if b_a != 0: #selon le bouton enfonce ajoute 1 2 ou 4 a sequence
    sequence += 1
@@ -70,16 +68,17 @@ for donnees in serie_l: #pour la serie
    sequence += 2
   if b_c != 0:
    sequence += 4
-  print("suite {} {}".format(sequence, serie_b[b_now]))
-  if sequence == serie_b[b_now]: #si les boutons enfonces correspondent
-   b_send = 1 #passe au code suivant
-  elif sequence != serie_b[b_now] and sequence != 0: #sinon renvoie faux
-   print "blyfool"
-   bad = 1
-   sequence = 0
+  #print("suite {} {}".format(sequence, serie_b[b_now]))
+  if sequence != 0: #sinon renvoie faux
+   b_send = 1
+   #sequence = 0
   else:
    sequence = 0
- b_now += 1 #si sortie de boucle passe au suivant
+ return sequence
+
+while True:
+ butt = l_and_b(6)
+ print butt
 
   #si un bouton enfonce
    #si bouton correspondant enfonce
