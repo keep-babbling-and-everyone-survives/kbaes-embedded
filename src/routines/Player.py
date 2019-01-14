@@ -12,7 +12,8 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-from modules.ButtonModule import playModule as playModule
+# from modules.ButtonModule import playModule as playModule
+from modules.MockModule import playModule as playModule
 
 class Player:
     __metaclass__ = Singleton
@@ -28,16 +29,23 @@ class Player:
                 print "Game %d pending" % (cls.game.id)
                 cls.startGame(message.getGameId())
             elif cls.game.status == "running" and message.getGameStatus() == "running":
-                print "Game %d already started" % (cls.game.id)
+                print "Received new game request for game %d, but it's already started." % (cls.game.id)
             elif (cls.game.status == "aborted" and message.getGameStatus() == "aborted") or (cls.game.status == "finished" and message.getGameStatus() == "finished"):
-                print "Game %d finished" % (cls.game.id)
+                print "Received new game request for game %d, but it's already finished" % (cls.game.id)
             else:
                 print "Inconsistence in game status. Reseting games"
                 cls.game.setNewGame(message.getGameId())
         else:
+            print "Received new game request for game %d..." % (message.getGameId())
             cls.game.setNewGame(message.getGameId())
             cls.game.setOptions(message.getGameOptions())
             cls.startGame(message.getGameId())
+
+    @classmethod
+    def abortGame(cls, message):
+        print __file__
+        print tornado.ioloop.IOLoop.current().__dict__
+        print "Listening..."
 
     @classmethod
     def startGame(cls, gameId):
@@ -50,7 +58,7 @@ class Player:
             req_body_dict = {'status':'OK'}
             confirmation = http_post_async(req_url, req_headers_dict, req_body_dict)
             # Execute the http request on main IOLoop
-            tornado.ioloop.IOLoop.instance().add_future(confirmation, onGameConfirmReponse)
+            tornado.ioloop.IOLoop.current().add_future(confirmation, Player.onGameConfirmReponse)
 
     @classmethod
     def initBoard(cls, ruleset):
@@ -61,9 +69,9 @@ class Player:
     @classmethod
     def execRuleSet(cls, ruleset):
         cls.game.currentRuleSet = Ruleset(ruleset)
-        print "Waiting for player input..."
+        print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
         modulePlayer = playModule(cls.game.currentRuleSet)
-        tornado.ioloop.IOLoop.instance().add_future(modulePlayer, onModuleSolved)
+        tornado.ioloop.IOLoop.current().add_future(modulePlayer, Player.onModuleSolved)
 
     @classmethod
     def sendAnswer(cls, answer):
@@ -72,21 +80,25 @@ class Player:
         req_headers_dict = {'Accept': "application/json",'Content-Type': "application/json"}
         req_body_dict = {'modules': answer}
         answerSending = http_post_async(req_url, req_headers_dict, req_body_dict)
-        tornado.ioloop.IOLoop.instance().add_future(answerSending, onAnswerSent)
+        tornado.ioloop.IOLoop.current().add_future(answerSending, Player.onAnswerSent)
 
-def onGameConfirmReponse(response):
-    result = response.result()
-    result = json.loads(result)
-    Player.initBoard(result["next_ruleset"])
+    @staticmethod
+    def onGameConfirmReponse(response):
+        result = response.result()
+        result = json.loads(result)
+        Player.initBoard(result["next_ruleset"])
 
-def onModuleSolved(response):
-    Player.sendAnswer(response.result())
+    @staticmethod
+    def onModuleSolved(response):
+        Player.sendAnswer(response.result())
 
-def onAnswerSent(response):
-    result = response.result()
-    result = json.loads(result)
-    if result["has_next"]:
-        Player.execRuleSet(result["next_ruleset"])
-    else:
-        print "Game finished."
+    @staticmethod
+    def onAnswerSent(response):
+        result = response.result()
+        result = json.loads(result)
+        if result["has_next"]:
+            Player.execRuleSet(result["next_ruleset"])
+        else:
+            print "Game finished."
+            print "Listening..."
 
