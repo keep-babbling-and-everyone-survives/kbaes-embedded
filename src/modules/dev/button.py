@@ -76,14 +76,6 @@ def l_and_b(leds):
    sequence = 0
  return sequence
 
-while True:
- butt = l_and_b(6)
- print butt
-
-  #si un bouton enfonce
-   #si bouton correspondant enfonce
-    #renvoie juste
-   #sinon erreur ou game over
- #si toutes les sequences validees
-  #gagne et fin du prog
- #a modifier pour les leds
+#while True:
+# butt = l_and_b(0)
+# print butt
