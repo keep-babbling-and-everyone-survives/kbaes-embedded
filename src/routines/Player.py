@@ -8,6 +8,9 @@ from utils.singleton import Singleton
 from utils.httpClient import http_post_async
 
 from model.Game import Game
+from model.Ruleset import Ruleset
+
+import modules.SimpleModule
 
 class Player:
     __metaclass__ = Singleton
@@ -31,7 +34,7 @@ class Player:
                 cls.game.setNewGame(message.getGameId())
         else:
             cls.game.setNewGame(message.getGameId())
-            cls.game.setOptions(message.getGamesOptions())
+            cls.game.setOptions(message.getGameOptions())
             cls.startGame(message.getGameId())
 
     @classmethod
@@ -51,9 +54,16 @@ class Player:
     def initBoard(cls, ruleset, gameid):
         print "Webservices accepted confirmation, starting the game..."
         cls.game.status = "running"
-        # Le code de valentin ici
+        cls.game.currentRuleSet = Ruleset(ruleset)
+        print "Waiting for player input..."
+        modulePlayer = modules.SimpleModule.playModule(cls.game.currentRuleSet)
+        tornado.ioloop.IOLoop.instance().add_future(modulePlayer, onModuleSolved)
 
 def onGameConfirmReponse(response):
     result = response.result()
     result = json.loads(result)
     Player.initBoard(result["next_ruleset"], result["game_id"])
+
+def onModuleSolved(response):
+    print response.result()
+
