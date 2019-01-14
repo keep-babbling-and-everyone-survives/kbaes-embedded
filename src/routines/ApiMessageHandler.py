@@ -25,7 +25,7 @@ class ApiMessageHandler:
                 self.handleMessage(msg)
         else:
             print "Connection error."
-            tornado.ioloop.IOLoop.instance().stop()
+            tornado.ioloop.IOLoop.current().stop()
 
     def handleMessage(self, msg):
         message = ApiMessage(msg)
@@ -36,7 +36,8 @@ class ApiMessageHandler:
 
     def triggerEvent(self, message):
         dispatcher = {
-            "RequestNewGame": Player.newGame
+            "RequestNewGame": Player.newGame,
+            "RequestGameHalt": Player.abortGame
         }
         event = message.getEvent()
         dispatch = dispatcher.get(event, lambda: self.unknownEvent)

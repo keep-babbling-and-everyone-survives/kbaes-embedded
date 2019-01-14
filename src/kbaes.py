@@ -18,4 +18,4 @@ client = tornadis.PubSubClient(host=options.api_address, port=options.redis_port
 listener = ApiMessageHandler(client, "%s%d" % (options.channel_name, options.board_id))
 
 if __name__ == '__main__':
-    tornado.ioloop.IOLoop.instance().run_sync(listener.startListening)
+    tornado.ioloop.IOLoop.current().run_sync(listener.startListening)
