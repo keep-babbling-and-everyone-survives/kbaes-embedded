@@ -69,12 +69,20 @@ class Player:
     @classmethod
     def execRuleSet(cls, ruleset):
         cls.game.currentRuleSet = Ruleset(ruleset)
+        answerprint = "Reponse attendue : "
+        for rs in cls.game.currentRuleSet.modules:
+            answerprint = "%s%d" % (answerprint, rs.solution)
         print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
+        print answerprint
         modulePlayer = playModule(cls.game.currentRuleSet)
         tornado.ioloop.IOLoop.current().add_future(modulePlayer, Player.onModuleSolved)
 
     @classmethod
     def sendAnswer(cls, answer):
+        answerprint  = "Reponse donnee : "
+        for r in answer:
+            answerprint = "%s%d" % (answerprint, r["solution"])
+        print answerprint
         print "Answer received from board, parsing and sending to API..."
         req_url = "%s://%s/api/game/%d/answer/%d" % (options.api_protocol, options.api_address, cls.game.id, cls.game.currentRuleSet.id)
         req_headers_dict = {'Accept': "application/json",'Content-Type': "application/json"}
