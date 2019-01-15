@@ -9,6 +9,7 @@ class Game:
         self.status = ""
         self.currentRuleset = Ruleset
         self.options = {}
+        self.interrupted = False
 
     def setId(self, id):
         self.id = id
@@ -18,9 +19,13 @@ class Game:
         self.status = "pending"
         self.options = {}
         self.currentRuleset = {}
+        self.interrupted = False
 
     def setCurrentRuleset(self, ruleset):
         self.currentRuleset = ruleset
 
     def setOptions(self, options):
         self.options = options
+
+    def interrupt(self):
+        self.interrupted = True

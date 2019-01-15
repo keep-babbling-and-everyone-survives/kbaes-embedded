@@ -12,8 +12,8 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-# from modules.ButtonModule import playModule as playModule
-from modules.MockModule import playModule as playModule
+from modules.ButtonModule import playModule as playModule
+# from modules.MockModule import playModule as playModule
 
 class Player:
     __metaclass__ = Singleton
@@ -43,9 +43,8 @@ class Player:
 
     @classmethod
     def abortGame(cls, message):
-        print __file__
-        print tornado.ioloop.IOLoop.current().__dict__
-        print "Listening..."
+        cls.game.interrupt()
+        print "Requested game interruption. Resetting the board."
 
     @classmethod
     def startGame(cls, gameId):
@@ -68,14 +67,17 @@ class Player:
 
     @classmethod
     def execRuleSet(cls, ruleset):
-        cls.game.currentRuleSet = Ruleset(ruleset)
-        answerprint = "Reponse attendue : "
-        for rs in cls.game.currentRuleSet.modules:
-            answerprint = "%s%d" % (answerprint, rs.solution)
-        print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
-        print answerprint
-        modulePlayer = playModule(cls.game.currentRuleSet)
-        tornado.ioloop.IOLoop.current().add_future(modulePlayer, Player.onModuleSolved)
+        if not cls.game.interrupted:
+            cls.game.currentRuleSet = Ruleset(ruleset)
+            answerprint = "Reponse attendue : "
+            for rs in cls.game.currentRuleSet.modules:
+                answerprint = "%s%d" % (answerprint, rs.solution)
+            print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
+            print answerprint
+            modulePlayer = playModule(cls.game.currentRuleSet)
+            tornado.ioloop.IOLoop.current().add_future(modulePlayer, Player.onModuleSolved)
+        else:
+            print "Interrupted.\nListening..."
 
     @classmethod
     def sendAnswer(cls, answer):
