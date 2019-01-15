@@ -19,6 +19,6 @@ def convertToJson(answer, ruleset):
     moduleslen = len(ruleset.modules)
     for n in range(moduleslen):
         bit = 2**(moduleslen-(n+1))
-        modules.append({"name": ruleset.modules[n].name, "solution": answer & bit > 0})
+        modules.append({"name": ruleset.modules[n].name, "solution": int(answer & bit > 0)})
     return modules
 
