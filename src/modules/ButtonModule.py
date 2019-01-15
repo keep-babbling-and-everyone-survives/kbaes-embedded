@@ -29,7 +29,7 @@ def b_trigger(buttons): #controle si au moins 1 bouton est enfonce
 def playModule(ruleset):
  GPIO.setmode(GPIO.BOARD)
  GPIO.setwarnings(False)
- buttons = [12,16,22]
+ buttons = [22,16,12]
  leds = [32,36,38,40] #broches des leds
 
  for led in leds: #borches des leds en sortie en LOW
@@ -91,6 +91,6 @@ def convertToJson(answer, ruleset):
  moduleslen = len(ruleset.modules)
  for n in range(moduleslen):
   bit = 2**(moduleslen-(n+1))
-  modules.append({"name": ruleset.modules[n].name, "solution": answer & bit > 0})
+  modules.append({"name": ruleset.modules[n].name, "solution": int(answer & bit > 0)})
  return modules
 
