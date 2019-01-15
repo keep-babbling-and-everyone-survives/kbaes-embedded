@@ -75,6 +75,10 @@ def playModule(ruleset):
   else:
    sequence = 0
  
+ for led in leds: #borches des leds en sortie en LOW
+  GPIO.setup(led,GPIO.OUT)
+  GPIO.output(led,GPIO.LOW)
+
  answer = yield tornado.gen.maybe_future(convertToJson(sequence, ruleset))
  raise tornado.gen.Return(answer)
 
