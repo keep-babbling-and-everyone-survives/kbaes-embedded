@@ -29,9 +29,9 @@ class ApiMessageHandler:
 
     def handleMessage(self, msg):
         message = ApiMessage(msg)
-        print "Message Type : %s" % (message.type)
-        print "Message Channel : %s" % (message.channel)
-        print "Event : %s" % (message.getEvent())
+        print ">\n> Message Type : %s" % (message.type)
+        print "> Message Channel : %s" % (message.channel)
+        print "> Event : %s\n>" % (message.getEvent())
         return self.triggerEvent(message)
 
     def triggerEvent(self, message):
