@@ -1,6 +1,7 @@
 import tornado.ioloop
 import tornado.gen
 import tornadis
+import sys
 
 from tornado.options import options, define
 from routines.ApiMessageHandler import ApiMessageHandler as ApiMessageHandler
@@ -18,4 +19,8 @@ client = tornadis.PubSubClient(host=options.api_address, port=options.redis_port
 listener = ApiMessageHandler(client, "%s%d" % (options.channel_name, options.board_id))
 
 if __name__ == '__main__':
-    tornado.ioloop.IOLoop.current().run_sync(listener.startListening)
+    try:
+        tornado.ioloop.IOLoop.current().run_sync(listener.startListening)
+    except (KeyboardInterrupt, SystemExit):
+        print '\n! Received keyboard interrupt, quitting threads.\n'
+        sys.exit()

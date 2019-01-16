@@ -45,7 +45,7 @@ def playModule(ruleset):
  while b_send == 0: #tant que la combinaison actuelle n'est pas envoyee
   b_a=b_b=b_c= 0
   sequence = 0 #redemarre la sequence de boutons
-  time.sleep(0.1) #definit le temps qui passe
+  yield tornado.gen.sleep(0.1) #definit le temps qui passe
   trigger = b_trigger(buttons) #verifie si un bouton est enfonce
   #print trigger
   while trigger > 0: #si en bouton est enfonce

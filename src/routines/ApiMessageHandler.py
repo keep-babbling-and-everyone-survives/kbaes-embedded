@@ -22,7 +22,7 @@ class ApiMessageHandler:
             while True:
                 # Let's "block" until a message is available
                 msg = yield client.pubsub_pop_message()
-                self.handleMessage(msg)
+                tornado.ioloop.IOLoop.current().spawn_callback(self.handleMessage, msg)
         else:
             print "Connection error."
             tornado.ioloop.IOLoop.current().stop()
