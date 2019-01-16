@@ -11,7 +11,7 @@ def consumer():
         item = yield q.get()
         try:
             print('Doing work on %s' % item)
-            yield gen.sleep(0.01)
+            yield tornado.gen.sleep(0.01)
         finally:
             q.task_done()
 
