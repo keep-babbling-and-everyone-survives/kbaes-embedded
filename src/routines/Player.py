@@ -2,9 +2,13 @@
 
 from tornado.gen import coroutine
 from tornado.options import options
+from Queue import Queue
+import time
+import sys
 import tornado.ioloop
 
 import json
+from threading import Thread
 
 from utils.singleton import Singleton
 from utils.httpClient import http_post_async
@@ -12,15 +16,17 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-from modules.ButtonModule import playModule as playModule
-from modules.TimerModule import TimerModule
-# from modules.MockModule import playModule as playModule
-# from modules.TimeMock import TimerModule
+#from modules.ButtonModule import playModule as playModule
+#from modules.TimerModule import TimerModule
+from modules.MockModule import ButtonModule
+from modules.TimeMock import TimerModule
 
 class Player:
     __metaclass__ = Singleton
     game = Game()
     timer = TimerModule
+    modulePlayer = ButtonModule
+    q = Queue()
 
     @classmethod
     def newGame(cls, message):
@@ -46,8 +52,11 @@ class Player:
 
     @classmethod
     def abortGame(cls, message):
-        cls.game.interrupt()
-        print "Requested game interruption. Resetting the board."
+        if (message.getGameId() == cls.game.id):
+            cls.game.interrupt()
+            print "Requested game interruption. Resetting the board."
+            if (cls.game.status == "running"):
+                cls.end_game(False)
 
     @classmethod
     def startGame(cls, gameId):
@@ -62,11 +71,25 @@ class Player:
             # Execute the http request on main IOLoop
             tornado.ioloop.IOLoop.current().add_future(confirmation, Player.onGameConfirmReponse)
 
+    @staticmethod
+    def eventLoop(player, iol):
+        result = player.q.get()
+        if result["event"] == "RS_ANSWERED":
+            iol.add_callback(player.sendAnswer,result["answer"])
+            del player.modulePlayer
+        elif result["event"] == "TIMER_DONE":
+            sys.stdout.write("timer for game %d ended.\n" % (player.game.id))
+            sys.stdout.flush()
+            player.game.interrupt()
+            iol.add_callback(player.end_game, True)
+        time.sleep(0.1)
+
     @classmethod
     def initBoard(cls, ruleset):
         print "Webservices accepted confirmation, starting the game..."
         cls.game.status = "running"
-        cls.timer = TimerModule(cls.game.id, cls.game.options["errors"], cls.game.options["time"])
+        cls.timer = TimerModule(cls.game.id, cls.game.options["errors"], cls.game.options["time"], cls.q)
+        cls.timer.daemon = True
         cls.timer.start()
         cls.execRuleSet(ruleset)
 
@@ -74,13 +97,16 @@ class Player:
     def execRuleSet(cls, ruleset):
         if not cls.game.interrupted:
             cls.game.currentRuleSet = Ruleset(ruleset)
+            cls.timer.gameRunning = True
             answerprint = "Reponse attendue : "
             for rs in cls.game.currentRuleSet.modules:
                 answerprint = "%s%d" % (answerprint, rs.solution)
             print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
             print answerprint
-            modulePlayer = playModule(cls.game.currentRuleSet)
-            tornado.ioloop.IOLoop.current().add_future(modulePlayer, Player.onModuleSolved)
+            t = Thread(target = Player.eventLoop, args= (cls, tornado.ioloop.IOLoop.current(),))
+            t.setDaemon(True)
+            t.start()
+            cls.modulePlayer = ButtonModule(cls.game.currentRuleSet, cls.q)
         else:
             print "Interrupted.\nListening..."
 
@@ -95,7 +121,7 @@ class Player:
         req_headers_dict = {'Accept': "application/json",'Content-Type': "application/json"}
         req_body_dict = {'modules': answer}
         answerSending = http_post_async(req_url, req_headers_dict, req_body_dict)
-        tornado.ioloop.IOLoop.current().add_future(answerSending, Player.onAnswerSent)
+        tornado.ioloop.IOLoop.current().add_future(answerSending, cls.onAnswerSent)
 
     @classmethod
     def onGameConfirmReponse(cls, response):
@@ -111,15 +137,17 @@ class Player:
     def onAnswerSent(cls, response):
         result = response.result()
         result = json.loads(result)
-        print result
         if result["has_next"]:
-            Player.execRuleSet(result["next_ruleset"])
+            cls.execRuleSet(result["next_ruleset"])
             if result["solved"] == 0:
                 cls.timer.increment_error_count()
         else:
-            cls.timer.should_stop()
-            message = "Perdu" if result["failed"] else "Gagne"
-            cls.timer.display_game_over(message)
-            print "Game finished."
-            print "Listening..."
+            cls.end_game(result["failed"])
+
+    @classmethod
+    def end_game(cls, failed):
+        message = "Perdu" if failed else "Gagne"
+        cls.timer.display_game_over(message)
+        print "Game finished."
+        print "Listening..."
 

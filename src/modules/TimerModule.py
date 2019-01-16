@@ -1,5 +1,5 @@
 import I2C_LCD_driver
-from time import *
+from time import sleep
 import tornado.gen
 import datetime
 from threading import Thread
@@ -8,8 +8,9 @@ mylcd = I2C_LCD_driver.lcd()
 
 
 class TimerModule(Thread):
- def __init__(self,gameId,nbr_errors,counter_seconds):
+ def __init__(self,gameId,nbr_errors,counter_seconds, queue):
   Thread.__init__(self)
+  self.q = queue
   self.gameId = gameId
   self.err_max = int(nbr_errors)
   self.countdown = float(counter_seconds)
@@ -51,7 +52,7 @@ class TimerModule(Thread):
 
   sys.stdout.write("Timer for game %d ended.\n" % (self.gameId))
   sys.stdout.flush()
-  return 0
+  self.q.put("TIMER_DONE")
 
 #x = display(5,30)
 #x.main_loop()

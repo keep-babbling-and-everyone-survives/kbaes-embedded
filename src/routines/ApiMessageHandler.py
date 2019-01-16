@@ -41,9 +41,7 @@ class ApiMessageHandler:
         }
         event = message.getEvent()
         dispatch = dispatcher.get(event, lambda: self.unknownEvent)
-        dispatch(message)
-        
-        return ""
+        tornado.ioloop.IOLoop.current().spawn_callback(dispatch, message)
     
     def unknownEvent(self):
         print "This event is not handled."
