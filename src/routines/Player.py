@@ -13,11 +13,13 @@ from model.Game import Game
 from model.Ruleset import Ruleset
 
 from modules.ButtonModule import playModule as playModule
+from modules.TimerModule import TimerModule
 # from modules.MockModule import playModule as playModule
 
 class Player:
     __metaclass__ = Singleton
     game = Game()
+    timer = TimerModule
 
     @classmethod
     def newGame(cls, message):
@@ -92,11 +94,27 @@ class Player:
         answerSending = http_post_async(req_url, req_headers_dict, req_body_dict)
         tornado.ioloop.IOLoop.current().add_future(answerSending, Player.onAnswerSent)
 
+    @classmethod
+    def startTimer(cls):
+        countdown = cls.game.options["time"]
+	err_max = cls.game.options["errors"]
+        cls.timer = TimerModule(cls.game.id,err_max,countdown)
+        timer_future = cls.timer.main_loop()
+        tornado.ioloop.IOLoop.current().add_future(timer_future,Player.onTimerFinished)
+
+    @staticmethod
+    def onTimerFinished(res):
+	result = res.result()
+        if Player.game.id == result:
+            Player.timer.should_stop()
+            Player.timer.display_game_over("Partie terminee")
+
     @staticmethod
     def onGameConfirmReponse(response):
         result = response.result()
         result = json.loads(result)
         Player.initBoard(result["next_ruleset"])
+        Player.startTimer()
 
     @staticmethod
     def onModuleSolved(response):
