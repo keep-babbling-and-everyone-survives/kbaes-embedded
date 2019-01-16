@@ -34,3 +34,7 @@ class TimerModule(Thread):
    #sys.stdout.write("%ds" % (self.time))
    #sys.stdout.flush()
    sleep(1)
+
+  sys.stdout.write("Timer for game %d ended.\n" % (self.gameId))
+  sys.stdout.flush()
+  return 0

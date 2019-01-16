@@ -14,8 +14,8 @@ from model.Ruleset import Ruleset
 
 from modules.ButtonModule import playModule as playModule
 from modules.TimerModule import TimerModule
-#from modules.MockModule import playModule as playModule
-#from modules.TimeMock import TimerModule
+# from modules.MockModule import playModule as playModule
+# from modules.TimeMock import TimerModule
 
 class Player:
     __metaclass__ = Singleton
@@ -66,8 +66,8 @@ class Player:
     def initBoard(cls, ruleset):
         print "Webservices accepted confirmation, starting the game..."
         cls.game.status = "running"
-        timer = TimerModule(cls.game.id, cls.game.options["errors"], cls.game.options["time"])
-        timer.start()
+        cls.timer = TimerModule(cls.game.id, cls.game.options["errors"], cls.game.options["time"])
+        cls.timer.start()
         cls.execRuleSet(ruleset)
 
     @classmethod
@@ -97,23 +97,29 @@ class Player:
         answerSending = http_post_async(req_url, req_headers_dict, req_body_dict)
         tornado.ioloop.IOLoop.current().add_future(answerSending, Player.onAnswerSent)
 
-    @staticmethod
-    def onGameConfirmReponse(response):
+    @classmethod
+    def onGameConfirmReponse(cls, response):
         result = response.result()
         result = json.loads(result)
         Player.initBoard(result["next_ruleset"])
 
-    @staticmethod
-    def onModuleSolved(response):
+    @classmethod
+    def onModuleSolved(cls, response):
         Player.sendAnswer(response.result())
 
-    @staticmethod
-    def onAnswerSent(response):
+    @classmethod
+    def onAnswerSent(cls, response):
         result = response.result()
         result = json.loads(result)
+        print result
         if result["has_next"]:
             Player.execRuleSet(result["next_ruleset"])
+            if result["solved"] == 0:
+                cls.timer.increment_error_count()
         else:
+            cls.timer.should_stop()
+            message = "Perdu" if result["failed"] else "Gagne"
+            cls.timer.display_game_over(message)
             print "Game finished."
             print "Listening..."
 
