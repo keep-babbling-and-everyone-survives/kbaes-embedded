@@ -26,7 +26,7 @@ class TimerModule(Thread):
  def increment_error_count(self):
   self.errors += 1
 
- def main_loop(self):
+ def run(self):
   compteur = self.countdown
   err_init = 0
   for i in range(self.err_max):
@@ -48,6 +48,10 @@ class TimerModule(Thread):
    mylcd.lcd_display_string("{}".format(compteur),1)
    #print compteur
    sleep(0.1)
+
+  sys.stdout.write("Timer for game %d ended.\n" % (self.gameId))
+  sys.stdout.flush()
+  return 0
 
 #x = display(5,30)
 #x.main_loop()
