@@ -56,7 +56,8 @@ class Player:
             cls.game.interrupt()
             print "Requested game interruption. Resetting the board."
             if (cls.game.status == "running"):
-                cls.end_game(False)
+                cls.modulePlayer.stop()
+                cls.end_game(True)
 
     @classmethod
     def startGame(cls, gameId):
@@ -76,11 +77,11 @@ class Player:
         result = player.q.get()
         if result["event"] == "RS_ANSWERED":
             iol.add_callback(player.sendAnswer,result["answer"])
-            del player.modulePlayer
         elif result["event"] == "TIMER_DONE":
             sys.stdout.write("timer for game %d ended.\n" % (player.game.id))
             sys.stdout.flush()
             player.game.interrupt()
+            player.modulePlayer.stop()
             iol.add_callback(player.end_game, True)
         time.sleep(0.1)
 

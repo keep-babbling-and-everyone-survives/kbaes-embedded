@@ -16,11 +16,15 @@ class TimerModule(Thread):
   self.countdown = float(counter_seconds)
   self.errors = 0
   self.should_continue = True
+  self.time = 0
+  self.gameRunning = False
 
  def should_stop(self):
   self.should_continue = False
 
  def display_game_over(self,chaine):
+  self.should_continue = False
+  self.gameRunning = False
   mylcd.lcd_display_string("{}".format("game over"),1)
   mylcd.lcd_display_string("{}".format(chaine),2)
 
@@ -49,19 +53,5 @@ class TimerModule(Thread):
    mylcd.lcd_display_string("{}".format(compteur),1)
    #print compteur
    sleep(0.1)
-
-  sys.stdout.write("Timer for game %d ended.\n" % (self.gameId))
-  sys.stdout.flush()
-  self.q.put("TIMER_DONE")
-
-#x = display(5,30)
-#x.main_loop()
-
-
-#des que la partie se lance
-# initialise le temps et le nombre d erreurs max
-# demarrer le compteur dans une instance thread
-# peut afficher minutes, secondes et dixieme
-# on verra la suite
-# si recoit un signal d erreur, affiche une erreur
-# au bout du nombre d'erreur max, partie perdue
+  if self.gameRunning:
+   self.q.put({"event": "TIMER_DONE"})

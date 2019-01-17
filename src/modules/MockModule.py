@@ -1,8 +1,6 @@
 import tornado.gen
-from tornado.ioloop import IOLoop
 from threading import Thread
 import json
-import sys
 
 class ButtonModule(Thread):
     def __init__(self, ruleset, queue):
