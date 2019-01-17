@@ -79,7 +79,8 @@ class TimerModule(Thread):
     self.display_errors()
    #if compteur < 0.1 || self.errors == self.err_max:
    mylcd.lcd_display_string("{:02d}:{:02.1f}".format(minutes,seconds),1) #pour rajouter les heures, ajouter {:02d}:
-   #print compteur
+   #print compteur*
+   compteur = float(hours) + float(minutes) + float(seconds)
    sleep(0.08)
 
   if self.gameRunning:
