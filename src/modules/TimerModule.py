@@ -80,5 +80,7 @@ class TimerModule(Thread):
    mylcd.lcd_display_string("{:02d}:{:02.1f}".format(minutes,seconds),1) #pour rajouter les heures, ajouter {:02d}:
    #print compteur
    sleep(0.08)
+
   if self.gameRunning:
    self.q.put({"event": "TIMER_DONE"})
+
