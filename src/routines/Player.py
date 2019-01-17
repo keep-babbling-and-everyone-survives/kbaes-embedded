@@ -59,7 +59,7 @@ class Player:
             print "Requested game interruption. Resetting the board."
             if (cls.game.status == "running"):
                 cls.modulePlayer.stop()
-                cls.end_game(True)
+                cls.end_game("Jeu annulé")
 
     @classmethod
     def startGame(cls, gameId):
@@ -84,7 +84,7 @@ class Player:
             sys.stdout.flush()
             player.game.interrupt()
             player.modulePlayer.stop()
-            iol.add_callback(player.end_game, True)
+            iol.add_callback(player.end_game, "Time's UP")
         time.sleep(0.1)
 
     @classmethod
@@ -128,6 +128,19 @@ class Player:
         tornado.ioloop.IOLoop.current().add_future(answerSending, cls.onAnswerSent)
 
     @classmethod
+    def sendTimesUp(cls):
+        print "Sending Time's up request to API..."
+        req_url = "%s://%s/api/game/%d/timesup" % (options.api_protocol, options.api_address, cls.game.id)
+        req_headers_dict = {'Accept': "application/json",'Content-Type': "application/json"}
+        req_body_dict = {}
+        timesupSending = http_post_async(req_url, req_headers_dict, req_body_dict)
+        tornado.ioloop.IOLoop.current().add_future(timesupSending, cls.onTimesupSent)
+
+    @classmethod
+    def onTimesupSent(cls):
+        print "Api stopped the game.\nListening..."
+
+    @classmethod
     def onGameConfirmReponse(cls, response):
         result = response.result()
         result = json.loads(result)
@@ -146,11 +159,10 @@ class Player:
             if result["solved"] == 0:
                 cls.timer.increment_error_count()
         else:
-            cls.end_game(result["failed"])
+            cls.end_game("Perdu")
 
     @classmethod
-    def end_game(cls, failed):
-        message = "Perdu" if failed else "Gagne"
+    def end_game(cls, message = ""):
         cls.timer.display_game_over(message)
         print "Game finished."
         print "Listening..."
