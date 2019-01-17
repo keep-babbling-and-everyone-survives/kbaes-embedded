@@ -84,6 +84,7 @@ class Player:
             sys.stdout.flush()
             player.game.interrupt()
             player.modulePlayer.stop()
+            iol.add_callback(player.sendTimesUp)
             iol.add_callback(player.end_game, "Time's UP")
         time.sleep(0.1)
 
@@ -137,8 +138,12 @@ class Player:
         tornado.ioloop.IOLoop.current().add_future(timesupSending, cls.onTimesupSent)
 
     @classmethod
-    def onTimesupSent(cls):
-        print "Api stopped the game.\nListening..."
+    def onTimesupSent(cls, response):
+        result = json.loads(response.result())
+        if result["status"] == "failed":
+            print "Api stopped the game.\nListening..."
+        else:
+            cls.sendTimesUp()
 
     @classmethod
     def onGameConfirmReponse(cls, response):
@@ -165,5 +170,4 @@ class Player:
     def end_game(cls, message = ""):
         cls.timer.display_game_over(message)
         print "Game finished."
-        print "Listening..."
 
