@@ -78,7 +78,7 @@ class Player:
         if result["event"] == "RS_ANSWERED":
             iol.add_callback(player.sendAnswer,result["answer"])
         elif result["event"] == "TIMER_DONE":
-            sys.stdout.write("timer for game %d ended.\n" % (player.game.id))
+            sys.stdout.write("\ntimer for game %d ended.\n" % (player.game.id))
             sys.stdout.flush()
             player.game.interrupt()
             player.modulePlayer.stop()
@@ -102,7 +102,8 @@ class Player:
             answerprint = "Reponse attendue : "
             for rs in cls.game.currentRuleSet.modules:
                 answerprint = "%s%d" % (answerprint, rs.solution)
-            print "Waiting for player input (ruleset %d)..." % (cls.game.currentRuleSet.id)
+            rsCombination = bin(cls.game.currentRuleSet.combination)
+            print "Waiting for player input (ruleset %s)..." % (rsCombination[rsCombination.rfind('b')+1:])
             print answerprint
             t = Thread(target = Player.eventLoop, args= (cls, tornado.ioloop.IOLoop.current(),))
             t.setDaemon(True)
