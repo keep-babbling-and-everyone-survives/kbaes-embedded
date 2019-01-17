@@ -25,7 +25,7 @@ class TimerModule(Thread):
  def display_game_over(self,chaine):
   self.should_continue = False
   self.gameRunning = False
-  mylcd.lcd_display_string("{}".format("game over"),1)
+  mylcd.lcd_display_string("{}".format("Game Over"),1)
   mylcd.lcd_display_string("{}".format(chaine),2)
 
  def increment_error_count(self):
@@ -44,9 +44,10 @@ class TimerModule(Thread):
   for i in range(self.err_max):
    mylcd.lcd_display_string("O",1,(15-i))
   for err in range(self.errors):
-   mylcd.lcd_display_string("X",1,((15-self.err_max)+err))
+   mylcd.lcd_display_string("X",1,((15-self.err_max)+(err+1)))
 
  def run(self):
+  mylcd.lcd_clear()
   #compteur = self.countdown
   compteur = self.parse_countdown(self.countdown) #8200 secondes comptera 2h sans l'afficher
   hours = compteur[0]; minutes = compteur[1]; seconds = float(compteur[2])
