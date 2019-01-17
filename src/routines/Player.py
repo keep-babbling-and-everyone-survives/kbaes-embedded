@@ -164,7 +164,7 @@ class Player:
             if result["solved"] == 0:
                 cls.timer.increment_error_count()
         else:
-            cls.end_game("Perdu" if result["failed"] else "Gagné")
+            cls.end_game("Perdu" if result["failed"] else "Gagne")
 
     @classmethod
     def end_game(cls, message = ""):
