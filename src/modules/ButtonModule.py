@@ -37,7 +37,7 @@ class ButtonModule(Thread):
   #print("boutons {}".format(n))
   return n
 
- def run(self, ruleset):
+ def run(self):
   GPIO.setmode(GPIO.BOARD)
   GPIO.setwarnings(False)
   buttons = [22,16,12]
@@ -50,7 +50,7 @@ class ButtonModule(Thread):
   for button in buttons: #broches des boutons en entree
    GPIO.setup(button,GPIO.IN)
 
-  self.switch_leds(ruleset.combination, leds) #change les leds
+  self.switch_leds(self.ruleset.combination, leds) #change les leds
   b_a=b_b=b_c= 0 #met les var a 0
   b_send=sequence = 0
   while b_send == 0: #tant que la combinaison actuelle n'est pas envoyee
