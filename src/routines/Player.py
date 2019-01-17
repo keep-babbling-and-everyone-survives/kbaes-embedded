@@ -16,10 +16,12 @@ from utils.httpClient import http_post_async
 from model.Game import Game
 from model.Ruleset import Ruleset
 
-#from modules.ButtonModule import playModule as playModule
-#from modules.TimerModule import TimerModule
-from modules.MockModule import ButtonModule
-from modules.TimeMock import TimerModule
+try:
+    from modules.ButtonModule import ButtonModule
+    from modules.TimerModule import TimerModule
+except ImportError:
+    from modules.MockModule import ButtonModule
+    from modules.TimeMock import TimerModule
 
 class Player:
     __metaclass__ = Singleton
