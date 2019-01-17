@@ -31,8 +31,25 @@ class TimerModule(Thread):
  def increment_error_count(self):
   self.errors += 1
 
+ def parse_countdown(self,countdown):
+  count = int(countdown)
+  hours=minutes=seconds = 0
+  hours = count/3600
+  minutes = (count/60) - (hours*60)
+  seconds = count - ((hours*3600)+(minutes*60))
+  temps = [hours,minutes,seconds]
+  return temps
+
+ def display_errors(self):
+  for i in range(self.err_max):
+   mylcd.lcd_display_string("O",1,(15-i))
+  for err in range(self.errors):
+   mylcd.lcd_display_string("X",1,((15-self.err_max)+err))
+
  def run(self):
-  compteur = self.countdown
+  #compteur = self.countdown
+  compteur = self.parse_countdown(self.countdown) #8200 secondes comptera 2h sans l'afficher
+  hours = compteur[0]; minutes = compteur[1]; seconds = float(compteur[2])
   err_init = 0
   for i in range(self.err_max):
    mylcd.lcd_display_string("O",1,(15-i))
@@ -40,18 +57,27 @@ class TimerModule(Thread):
   while compteur >= 0.0 and self.should_continue:
    if self.errors > err_init:
     err_init = self.errors
-    for err in range(err_init):
-     mylcd.lcd_display_string("X",1,((15-self.err_max)+err))
-   compteur -= 0.1
-   #if compteur < 0.1 || self.errors == self.err_max:
-   if compteur < 10.0 and compteur > 9.8:
+    self.display_errors()
+   if seconds > 0.0:
+    pass
+   else:
+    if minutes > 0:
+     minutes -= 1
+     seconds += 60.0
+    else:
+     if hours > 0:
+      hours -= 1
+      minutes += 59
+      seconds += 60.0
+     else:
+      seconds += 0.1
+   seconds -= 0.1
+   if seconds < 10.0 and seconds > 9.8:
     mylcd.lcd_clear()
-    for i in range(self.err_max):
-     mylcd.lcd_display_string("O",1,(15-i))
-    for err in range(err_init):
-     mylcd.lcd_display_string("X",1,((15-self.err_max)+err))
-   mylcd.lcd_display_string("{}".format(compteur),1)
+    self.display_errors()
+   #if compteur < 0.1 || self.errors == self.err_max:
+   mylcd.lcd_display_string("{:02d}:{:02.1f}".format(minutes,seconds),1) #pour rajouter les heures, ajouter {:02d}:
    #print compteur
-   sleep(0.1)
+   sleep(0.08)
   if self.gameRunning:
    self.q.put({"event": "TIMER_DONE"})
