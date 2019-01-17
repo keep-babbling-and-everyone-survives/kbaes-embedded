@@ -25,6 +25,7 @@ class TimerModule(Thread):
  def display_game_over(self,chaine):
   self.should_continue = False
   self.gameRunning = False
+  mylcd.lcd_clear()
   mylcd.lcd_display_string("{}".format("Game Over"),1)
   mylcd.lcd_display_string("{}".format(chaine),2)
 
