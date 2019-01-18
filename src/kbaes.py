@@ -5,6 +5,7 @@ import sys
 
 from tornado.options import options, define
 from routines.ApiMessageHandler import ApiMessageHandler as ApiMessageHandler
+from reset_board import reset_board
 
 define('api_protocol')
 define('api_address')
@@ -20,6 +21,7 @@ client = tornadis.PubSubClient(host=options.redis_address, port=options.redis_po
 listener = ApiMessageHandler(client, "%s%d" % (options.channel_name, options.board_id))
 
 if __name__ == '__main__':
+    reset_board()
     try:
         tornado.ioloop.IOLoop.current().run_sync(listener.startListening)
     except (KeyboardInterrupt, SystemExit):
