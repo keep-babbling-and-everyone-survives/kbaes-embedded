@@ -31,7 +31,7 @@ Le script a deux postures: une posture d'attente de redis pour lancer un jeu (st
 - La _response_ de l'api définit la suite:
   - Le jeu est perdu (Trop d'erreurs), affichage d'un message d'échec sur le petit écran. __sortie de boucle__
   - Le jeu est gagné (tous les modules ont été répondu dans le temps donné sans dépasser la limite d'erreurs). Affichage du message de victoire __sortie de boucle__
-  - Le jeu continue: La réponse de l'api contient le résultat de l'envoi (Bonne/mauvaise réponse), ainsi que la séquence de jeu suivante. 
+  - Le jeu continue: La réponse de l'api contient le résultat de l'envoi (Bonne/mauvaise réponse), ainsi que la séquence de jeu suivante. __Itération suivante__
   
 ### Les modules électroniques
 
