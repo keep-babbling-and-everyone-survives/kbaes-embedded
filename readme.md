@@ -47,4 +47,6 @@ Le script joint l'api sur ces routes:
 
 ## Utilisation
 
+Créer un fichier kbaes.conf d'après kbaes.conf.example. Renseigner les adresses.
+
 Lancer src/kbaes.py (python 2.7)
